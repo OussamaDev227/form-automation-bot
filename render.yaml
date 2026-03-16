@@ -1,0 +1,90 @@
+# render.yaml — Render Blueprint for FormBot
+#
+# Defines 3 services in one file:
+#   1. formbot-db        — Managed PostgreSQL
+#   2. formbot-backend   — FastAPI + Playwright (Docker)
+#   3. formbot-frontend  — React static site (Vite build)
+#
+# Deploy: push to GitHub, connect repo in Render Dashboard,
+# Render detects this file and provisions everything automatically.
+#
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: formbot-db
+    plan: free               # upgrade to starter ($7/mo) for production
+    databaseName: formbot
+    user: formbot
+    region: oregon           # match your web service region
+
+services:
+
+  # ── Backend — FastAPI + Playwright ────────────────────────
+  - type: web
+    name: formbot-backend
+    region: oregon
+    plan: standard           # free plan sleeps; standard ($25/mo) stays live
+                             # Playwright also needs >512MB RAM — standard has 2GB
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+
+    # Render expects port 10000 by default; uvicorn binds to it via PORT env
+    healthCheckPath: /health
+
+    envVars:
+      # ── Secrets (set values in Render Dashboard after deploy) ──
+      - key: API_KEY
+        generateValue: true          # Render auto-generates a secure random value
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: formbot-db
+          property: connectionString  # Render injects the internal DB URL
+
+      # ── Config ────────────────────────────────────────────────
+      - key: ALLOWED_ORIGINS
+        value: https://formbot-frontend.onrender.com  # update with your real URL
+
+      - key: ENV
+        value: production
+
+      - key: MAX_CONCURRENT_JOBS
+        value: "3"                   # conservative for standard plan (2GB RAM)
+
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+      - key: PORT
+        value: "10000"               # Render's default port
+
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+
+  # ── Frontend — React static site ──────────────────────────
+  - type: web
+    name: formbot-frontend
+    region: oregon
+    plan: free                       # static sites are always free on Render
+    runtime: static
+
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+
+    # SPA fallback — serve index.html for all routes
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: formbot-backend
+          type: web
+          property: host             # injects https://formbot-backend.onrender.com
+
+      - key: VITE_API_KEY
+        fromService:
+          name: formbot-backend
+          type: web
+          envVarKey: API_KEY         # same generated key as backend

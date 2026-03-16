@@ -1,0 +1,107 @@
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 0.3px;
+}
+
+.numInput {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 7px 10px;
+  border: 0.5px solid var(--border2);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.numInput:focus { border-color: var(--accent2); }
+
+.stratTabs {
+  display: flex;
+  gap: 4px;
+}
+
+.stratBtn {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 6px 4px;
+  border: 0.5px solid var(--border2);
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text2);
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.stratBtn:hover { background: var(--bg2); }
+
+.stratActive {
+  background: var(--accent2) !important;
+  border-color: var(--accent2) !important;
+  color: #fff !important;
+}
+
+.workers {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.worker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 9px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  min-width: 54px;
+}
+
+.workerIcon {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.divider {
+  height: 0.5px;
+  background: var(--border);
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+}

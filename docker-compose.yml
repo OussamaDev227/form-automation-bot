@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     formbot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-formbot_dev}
+      POSTGRES_DB:       formbot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U formbot -d formbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"   # remove in production
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # ── Required — set these in .env or your secrets manager ──
+      API_KEY:          ${API_KEY}          # Must be set; server refuses to start without it
+      DATABASE_URL:     postgresql://formbot:${DB_PASSWORD:-formbot_dev}@db:5432/formbot
+      # ── Optional ──────────────────────────────────────────────
+      ALLOWED_ORIGINS:  ${ALLOWED_ORIGINS:-http://localhost:5173}
+      MAX_CONCURRENT_JOBS: ${MAX_CONCURRENT_JOBS:-5}
+      ENV:              ${ENV:-development}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-}   # Leave blank to use nginx proxy (recommended)
+      VITE_API_KEY: ${API_KEY}
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 11px;
+  border-radius: 4px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.dotAnim {
+  animation: blink 1s ease infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+.idle    { background: var(--bg2);         color: var(--text3); }
+.running { background: var(--info-bg);     color: var(--info-text); }
+.success { background: var(--success-bg);  color: var(--success-text); }
+.failed  { background: var(--danger-bg);   color: var(--danger-text); }
