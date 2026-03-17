@@ -92,7 +92,29 @@ interface FieldInputProps {
 
 const FieldInput: React.FC<FieldInputProps> = ({ field, value, onChange }) => {
   const { t } = useTranslation()
-  const type = field.type.toLowerCase()
+  const rawType = field.type.toLowerCase()
+
+  // Heuristic: upgrade some text inputs to date pickers
+  const type = React.useMemo(() => {
+    if (rawType !== 'text') return rawType
+
+    const haystack = [
+      field.label,
+      field.name,
+      field.placeholder,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    if (
+      /\b(date|dob|birth|birthday|naissance|fecha|data)\b/.test(haystack)
+    ) {
+      return 'date'
+    }
+
+    return 'text'
+  }, [rawType, field.label, field.name, field.placeholder])
 
   if (type === 'textarea') {
     return (
